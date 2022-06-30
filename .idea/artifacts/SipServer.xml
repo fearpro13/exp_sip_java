@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="SipServer">
+    <output-path>$PROJECT_DIR$/out</output-path>
+    <root id="archive" name="sip_server.jar">
+      <element id="module-output" name="SipExperiment" />
+    </root>
+  </artifact>
+</component>
