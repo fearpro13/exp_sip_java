@@ -51,10 +51,10 @@ public class UdpServer extends AbstractServer {
                 } catch (IOException ignored) {
                     this.isRunning = false;
                 }
+                Thread.sleep(100L);
             }catch (Throwable throwable){
                 throwable.printStackTrace();
             }
-
         }
 
         this.datagramSocket = null;
@@ -64,8 +64,8 @@ public class UdpServer extends AbstractServer {
 
     @Override
     public void stopServer(){
-        this.isRunning = false;
         this.datagramSocket.close();
+        this.isRunning = false;
     }
 
     @Override

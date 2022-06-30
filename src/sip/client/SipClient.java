@@ -12,6 +12,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.function.Consumer;
 
 public class SipClient extends Thread implements TransportClientInterface {
     protected String hostIp;
@@ -42,6 +43,8 @@ public class SipClient extends Thread implements TransportClientInterface {
 
     private HashMap<String, Dialog> dialogs = new HashMap<>();
 
+    public Consumer<SipClient> onStop;
+
 
     private boolean isBusy;
 
@@ -49,10 +52,10 @@ public class SipClient extends Thread implements TransportClientInterface {
     public static final String version = "0.0.14";
     public static final String userAgent = "Experimental Sip Client 0.0.14";
 
-
+    private ClientConsoleWorker consoleWorker;
     private boolean needConsoleWorker = true;
 
-    public SipClient(String localIp, String login,boolean needConsoleWorker) {
+    public SipClient(String localIp, String login, boolean needConsoleWorker) {
         this.login = login;
         this.clientIp = localIp;
         this.branchId = String.format("z9hG4bK-%s", Math.random() * 900000);
@@ -63,8 +66,8 @@ public class SipClient extends Thread implements TransportClientInterface {
     }
 
     public void startClient() {
-        if(this.needConsoleWorker){
-            ClientConsoleWorker consoleWorker = new ClientConsoleWorker(this);
+        if (this.needConsoleWorker) {
+            this.consoleWorker = new ClientConsoleWorker(this);
             consoleWorker.startWorker();
         }
 
@@ -74,6 +77,9 @@ public class SipClient extends Thread implements TransportClientInterface {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        isAlive = true;
+        transportClient.start();
+        this.start();
     }
 
     public void connect(String ip, int port, String protocol) {
@@ -103,16 +109,10 @@ public class SipClient extends Thread implements TransportClientInterface {
             this.hostIp = ip;
             this.hostPort = port;
             this.protocol = protocol;
-
-            isAlive = true;
-
-            this.start();
-            transportClient.start();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             isAlive = false;
         }
-
     }
 
     public void onReceive(String ip, int port, String message) {
@@ -140,6 +140,10 @@ public class SipClient extends Thread implements TransportClientInterface {
             String currentMessage;
             while (isAlive) {
                 currentMessage = in.readLine();
+                if (currentMessage == null) {
+                    isAlive = false;
+                    continue;
+                }
                 if (currentMessage.equals("")) {
                     String message = bufferedMessage.toString();
                     bufferedMessage.setLength(0);
@@ -160,7 +164,7 @@ public class SipClient extends Thread implements TransportClientInterface {
 
                     message = message.substring(posOfSign + 1);
 
-                    log(String.format("[SERVER:%s:%d -> USER] %s%n", remoteIp,remotePort, message.split("\r\n")[0]));
+                    log(String.format("[SERVER:%s:%d -> USER] %s%n", remoteIp, remotePort, message.split("\r\n")[0]));
 
                     if (AbstractSipStructure.isRequest(message)) {
                         SipRequest incomingRequest = SipRequest.parse(message);
@@ -178,6 +182,7 @@ public class SipClient extends Thread implements TransportClientInterface {
                 } else {
                     bufferedMessage.append(currentMessage).append("\r\n");
                 }
+                Thread.sleep(50L);
             }
         } catch (Throwable throwable) {
             throwable.printStackTrace();
@@ -185,7 +190,9 @@ public class SipClient extends Thread implements TransportClientInterface {
         }
 
         this.log(String.format("Sip client %s stopped working", this.login));
-
+        if (this.onStop != null) {
+            this.onStop.accept(this);
+        }
     }
 
     private void parseRequest(SipRequest request) {
@@ -199,11 +206,11 @@ public class SipClient extends Thread implements TransportClientInterface {
             if (request.getToTag() != null) {
                 Dialog dialog = this.dialogs.get(request.getToTag());
                 if (dialog == null) {
-                    if(
+                    if (
                             request.getMethod().equalsIgnoreCase(AbstractSipStructure.METHODS.BYE.name()) &&
-                                    !String.format("%s:%d", request.getRemoteIp(),request.getRemotePort()).equalsIgnoreCase(String.format("%s:%d",hostIp,hostPort )) &&
+                                    !String.format("%s:%d", request.getRemoteIp(), request.getRemotePort()).equalsIgnoreCase(String.format("%s:%d", hostIp, hostPort)) &&
                                     request.getToTag().equalsIgnoreCase(this.fromTag)
-                    ){
+                    ) {
                         //Recipient sends bye directly to client, avoiding proxy
                         //and has swapped FROM and TO headers. so that we have to search dialog by fromTag instead of toTag
                         dialog = this.dialogs.get(request.getFromTag());
@@ -241,9 +248,9 @@ public class SipClient extends Thread implements TransportClientInterface {
 
             if (response.getToTag() != null) {
                 Dialog dialog;
-                if(response.getStatusCode() == 180){
+                if (response.getStatusCode() == 180) {
                     dialog = dialogs.get(response.getToName());
-                }else{
+                } else {
                     dialog = dialogs.get(response.getToTag());
                 }
 
@@ -280,12 +287,12 @@ public class SipClient extends Thread implements TransportClientInterface {
         return dialog;
     }
 
-    public void renameDialog(Dialog dialog,String newName){
+    public void renameDialog(Dialog dialog, String newName) {
         String oldName = dialog.getDialogId();
         Dialog prevDialog = this.dialogs.get(oldName);
         if (prevDialog != null) {
-            log(String.format("Dialog %s renamed to %s%n", oldName,newName));
-            this.dialogs.put(newName,this.dialogs.remove(dialog.getDialogId()));
+            log(String.format("Dialog %s renamed to %s%n", oldName, newName));
+            this.dialogs.put(newName, this.dialogs.remove(dialog.getDialogId()));
         }
     }
 
@@ -304,12 +311,21 @@ public class SipClient extends Thread implements TransportClientInterface {
         }
     }
 
-    public void log(String message){
+    public void log(String message) {
         System.out.println(message);
         this.logger.write(message);
     }
 
-    public void stopClient(){
+    public void stopClient() {
+        if (this.consoleWorker != null) {
+            this.consoleWorker.stopWorker();
+        }
+        try {
+            this.sink.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        this.transportClient.stopClient();
         this.isAlive = false;
     }
 
@@ -319,5 +335,13 @@ public class SipClient extends Thread implements TransportClientInterface {
 
     public void setBusy(boolean busy) {
         isBusy = busy;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public boolean isRunning() {
+        return this.isAlive;
     }
 }

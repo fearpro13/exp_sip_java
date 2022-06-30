@@ -2,16 +2,19 @@ package sipclientpool;
 
 import logger.Logger;
 import server.NetworkMessageReceiver;
+import sip.client.ClientController;
 import sip.client.SipClient;
 import tcp.TcpServer;
 
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class SipClientPool extends Thread implements NetworkMessageReceiver {
-    private HashMap<String, SipClient> clients = new HashMap<>();
-    private HashMap<String,Long> clientIdles = new HashMap<>();
-    private int maxIdle = 30;
+    private ConcurrentHashMap<String, SipClient> clients = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Long> clientIdles = new ConcurrentHashMap<>();
+    private int maxIdle = 10;
     private TcpServer controlServer;
     private int controlServerPort;
 
@@ -25,7 +28,10 @@ public class SipClientPool extends Thread implements NetworkMessageReceiver {
 
     private boolean isRunning;
 
-    public SipClientPool(String serverIp,int serverPort,String localIp,int controlServerPort,String protocol){
+    public SipClientPool() {
+    }
+
+    public void startPool(String localIp, String serverIp, int serverPort, int controlServerPort, String protocol) {
         this.localIp = localIp;
         this.protocol = protocol;
         this.controlServerPort = controlServerPort;
@@ -33,31 +39,45 @@ public class SipClientPool extends Thread implements NetworkMessageReceiver {
         this.serverIp = serverIp;
         this.serverPort = serverPort;
 
-        this.controlServer = new TcpServer(localIp,this.controlServerPort,this);
-    }
-
-    public void startPool(){
+        this.controlServer = new TcpServer(localIp, this.controlServerPort, this);
         this.controlServer.startServer();
-        this.logger = new Logger("sip_client_pool");
+
+        this.logger = new Logger("sip_client_pool.log");
         this.isRunning = true;
         this.start();
-        this.log(String.format("Sip client pool started with tcp control server at %s:%d", this.localIp,this.controlServerPort));
+        this.log(String.format("Sip client pool started with tcp control server at %s:%d%n", this.localIp, this.controlServerPort));
     }
 
-    public void spawnClient(String login){
-        SipClient client = new SipClient(localIp,login,false);
-        client.startClient();
+    public void stopPool() {
+        this.controlServer.stopServer();
+        this.isRunning = false;
+    }
+
+    public SipClient spawnClient(String login) {
+        SipClient client = new SipClient(localIp, login, false);
         client.connect(this.serverIp, this.serverPort, this.protocol);
-        this.clients.put(login,client);
-        this.clientIdles.put(login,TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
+        client.startClient();
+        client.onStop = this::utilizeClient;
+
+        this.clientIdles.put(login, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
+        this.clients.put(login, client);
+
+        return client;
     }
 
     @Override
     public void onReceive(String ip, int port, String message) {
-        switch (message.trim().toLowerCase()){
-            case "spawn":
-                spawnClient("ABOBA");
-                break;
+        try {
+            switch (message.trim().toLowerCase()) {
+                case "spawn":
+                    SipClient client = spawnClient("ABOBA");
+                    ClientController.processCommand(client, "register", null);
+                    Thread.sleep(2000L);
+                    ClientController.processCommand(client, "call", new String[]{"ff3"});
+                    break;
+            }
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
         }
     }
 
@@ -65,27 +85,43 @@ public class SipClientPool extends Thread implements NetworkMessageReceiver {
     public void run() {
         super.run();
 
-        while (isRunning){
-            long currentTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
-            this.clients.forEach((login,client) -> {
-                if(client.isBusy()){
-                    this.clientIdles.put(login,currentTime);
-                }else{
-                    if((currentTime - this.clientIdles.get(login)) > maxIdle){
-                        utilizeClient(login);
+        try {
+            while (isRunning) {
+                this.utilizeClients();
+                Thread.sleep(200L);
+            }
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+    }
+
+    public void utilizeClients() {
+        long currentTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+        Iterator<Map.Entry<String, SipClient>> clientIterator = this.clients.entrySet().iterator();
+        while (clientIterator.hasNext()) {
+            Map.Entry<String, SipClient> clientEntry = clientIterator.next();
+            SipClient client = clientEntry.getValue();
+            String login = client.getLogin();
+            if (client.isBusy()) {
+                this.clientIdles.put(login, currentTime);
+            } else {
+                if ((currentTime - this.clientIdles.get(login)) > maxIdle) {
+                    if (client.isRunning()) {
+                        this.log(String.format("Sip client %s has been utilized%n", login));
+                        client.stopClient();
                     }
                 }
-            });
+            }
         }
     }
 
-    public void utilizeClient(String login){
-        this.log(String.format("Sip client %s has been utilized", login));
-        SipClient client = this.clients.remove(login);
-        client.stopClient();
+    private void utilizeClient(SipClient client) {
+        this.clients.remove(client.getLogin());
+        this.clientIdles.remove(client.getLogin());
     }
 
-    private void log(String message){
+    private void log(String message) {
         System.out.println(message);
         this.logger.write(message);
     }

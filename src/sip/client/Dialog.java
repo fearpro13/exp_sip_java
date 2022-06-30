@@ -283,17 +283,21 @@ public class Dialog extends Thread {
             if (idle > this.timeout) {
                 this.informTimeoutReached();
 
-                this.toTag = null;
                 log(String.format("Dialog %s has been reached maximum timeout of %d seconds %n", getDialogId(), this.timeout));
                 isRunning = false;
                 this.interrupt();
+            }
+
+            try {
+                Thread.sleep(50L);
+            } catch (InterruptedException ignored) {
             }
         }
 
         this.onFinish.accept(this);
         log(String.format("Dialog %s has been finished%n", getDialogId()));
         this.toTag = null;
-        this.interrupt();
+        //this.interrupt();
     }
 
     public String getDialogId() {

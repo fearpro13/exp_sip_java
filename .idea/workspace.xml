@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6c649d14-728b-43bb-96fa-a4fabf75119c" name="Changes" comment="" />
+    <list default="true" id="6c649d14-728b-43bb-96fa-a4fabf75119c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/consoleworker/AbstractConsoleWorker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/consoleworker/AbstractConsoleWorker.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/TransportClientInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/TransportClientInterface.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sip/client/ClientConsoleWorker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/sip/client/ClientConsoleWorker.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sip/client/Dialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/sip/client/Dialog.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sip/client/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/sip/client/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sip/client/SipClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/sip/client/SipClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sip/server/SipServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/sip/server/SipServer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sipclientpool/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/sipclientpool/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sipclientpool/SipClientPool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/sipclientpool/SipClientPool.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tcp/TcpClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/tcp/TcpClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tcp/TcpServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/tcp/TcpServer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/udp/UdpClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/udp/UdpClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/udp/UdpServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/udp/UdpServer.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -14,6 +29,9 @@
         <option value="Class" />
       </list>
     </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitSEFilterConfiguration">
     <file-type-list>
@@ -35,7 +53,7 @@
     <property name="Repository.Attach.Sources" value="false" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/lib/slf4j-api-1.7.25.jar" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.46666667" />
@@ -55,6 +73,7 @@
     <configuration name="SipClientPoolTCP" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="sipclientpool.Main" />
       <module name="SipExperiment" />
+      <option name="PROGRAM_PARAMETERS" value="127.0.0.1 127.0.0.1:5505 5090 tcp" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -62,7 +81,7 @@
     <configuration name="SipClientTCP" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="sip.client.Main" />
       <module name="SipExperiment" />
-      <option name="PROGRAM_PARAMETERS" value="amobus@10.0.43.19 10.0.43.19:5505 tcp" />
+      <option name="PROGRAM_PARAMETERS" value="amobus@127.0.0.1 127.0.0.1:5505 tcp" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -110,55 +129,15 @@
     </task>
     <servers />
   </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/sip/client/Main.java</url>
-          <line>14</line>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/sip/client/Main.java</url>
-          <line>15</line>
-          <option name="timeStamp" value="3" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/sip/client/SipClient.java</url>
-          <line>89</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/tcp/TcpClient.java</url>
-          <line>66</line>
-          <option name="timeStamp" value="7" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/tcp/TcpClient.java</url>
-          <line>67</line>
-          <option name="timeStamp" value="8" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/sip/client/SipClient.java</url>
-          <line>87</line>
-          <option name="timeStamp" value="9" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/sip/client/SipClient.java</url>
-          <line>86</line>
-          <option name="timeStamp" value="10" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/tcp/TcpClient.java</url>
-          <line>54</line>
-          <option name="timeStamp" value="11" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/tcp/TcpClient.java</url>
-          <line>59</line>
-          <option name="timeStamp" value="12" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

@@ -56,11 +56,19 @@ public class UdpClient extends Thread implements TransportClientInterface {
                 datagramSocket.receive(packet);
                 byte[] data = packet.getData();
                 this.onReceive(packet.getAddress().getHostAddress(), packet.getPort(), new String(data, packet.getOffset(), packet.getLength()));
-            } catch (IOException e) {
-                e.printStackTrace();
+
+                Thread.sleep(100L);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
             }
         }
 
         this.interrupt();
+    }
+
+    @Override
+    public void stopClient() {
+        datagramSocket.close();
+        this.isRunning = false;
     }
 }

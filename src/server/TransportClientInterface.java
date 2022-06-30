@@ -17,4 +17,6 @@ public interface TransportClientInterface extends NetworkMessageReceiver {
      * В случае если для работы клиента требуется его запуск или инициализация
      */
     void start();
+
+    void stopClient();
 }

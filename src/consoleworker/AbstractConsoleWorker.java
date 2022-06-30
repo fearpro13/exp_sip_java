@@ -13,6 +13,8 @@ public abstract class AbstractConsoleWorker extends Thread{
         this.isRunning = true;
         in = new BufferedReader(new InputStreamReader(System.in));
         System.out.println("Console worker started");
+
+        setName("console_worker");
         this.start();
     }
 
@@ -44,8 +46,9 @@ public abstract class AbstractConsoleWorker extends Thread{
                     }
                     processCommand(command,args);
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+                Thread.sleep(200L);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
             }
         }
 

@@ -71,6 +71,7 @@ public class SipServer extends Thread implements TransportClientInterface {
 
         transportServer.startServer();
 
+        setName("sip_server");
         super.start();
         System.out.printf("Started SIP server at %s://%s:%d \n", protocol, ip, port);
     }
@@ -115,7 +116,8 @@ public class SipServer extends Thread implements TransportClientInterface {
             String currentMessage;
             String message;
 
-            while (isRunning && ((currentMessage = in.readLine()) != null)) {
+            while (isRunning){
+                currentMessage = in.readLine();
                 if (currentMessage.equals("")) {
                     message = bufferedMessage;
                     bufferedMessage = "";
@@ -169,6 +171,8 @@ public class SipServer extends Thread implements TransportClientInterface {
                 } else {
                     bufferedMessage += (currentMessage + "\r\n");
                 }
+
+                Thread.sleep(50L);
             }
         } catch (Throwable throwable) {
             throwable.printStackTrace();
@@ -255,5 +259,10 @@ public class SipServer extends Thread implements TransportClientInterface {
 
     public Security getSecurity() {
         return security;
+    }
+
+    @Override
+    public void stopClient() {
+        this.stopServer();
     }
 }

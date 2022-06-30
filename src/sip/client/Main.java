@@ -12,7 +12,7 @@ public class Main {
         String protocol = args[2];
 
         SipClient client = new SipClient(localIp,login,true);
-        client.startClient();
         client.connect(ip, Integer.parseInt(port), protocol);
+        client.startClient();
     }
 }

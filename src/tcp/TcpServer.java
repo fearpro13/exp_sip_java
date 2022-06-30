@@ -31,6 +31,7 @@ public class TcpServer extends AbstractServer implements TransportClientInterfac
         try {
             this.serverSocket = new ServerSocket(port, 5, InetAddress.getByName(ip));
             this.isRunning = true;
+            setName("tcp_server");
             this.start();
             System.out.printf("Started %s server at %s on port %d%n", protocol, ip, port);
         } catch (Throwable throwable) {
@@ -53,8 +54,10 @@ public class TcpServer extends AbstractServer implements TransportClientInterfac
 
                     tcpClient.onShutdown = this::disconnect;
 
+                    System.out.printf("%s:%d connected %n",client.getInetAddress().getHostAddress(), client.getPort());
                     tcpClient.start();
                 } catch (IOException ignored) {
+                    ignored.printStackTrace();
                 }
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
@@ -106,5 +109,10 @@ public class TcpServer extends AbstractServer implements TransportClientInterfac
     @Override
     public void onReceive(String ip, int port, String message) {
         receiver.onReceive(ip, port, message);
+    }
+
+    @Override
+    public void stopClient() {
+        this.stopServer();
     }
 }
